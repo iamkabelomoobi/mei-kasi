@@ -17,14 +17,14 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const LoginScreen = () => {
+const RegisterScreen = () => {
   const [showPassword, setShowPassword] = useState(false);
 
   const { logoFadeAnim, logoScaleAnim, formSlideAnim, formFadeAnim } =
     useAuthAnimations();
 
-  const handleSignIn = () => {
-    // TODO: Implement sign-in logic
+  const handleSignUp = () => {
+    // TODO: implement register logic
   };
 
   return (
@@ -65,10 +65,49 @@ const LoginScreen = () => {
               },
             ]}
           >
-            <Text style={authStyles.title}>Welcome back</Text>
+            <Text style={authStyles.title}>Create your account</Text>
             <Text style={authStyles.subtitle}>
-              Enter your email and password to access your account.
+              Join us and start your journey today
             </Text>
+
+            <View style={authStyles.row}>
+              <View style={authStyles.halfInputWrapper}>
+                <Text style={authStyles.label}>First name</Text>
+                <View style={[authStyles.inputContainer]}>
+                  <Ionicons
+                    name="person-outline"
+                    size={18}
+                    color="#888"
+                    style={authStyles.inputIcon}
+                  />
+                  <TextInput
+                    placeholder="Jack"
+                    placeholderTextColor="#999"
+                    style={authStyles.input}
+                    autoCapitalize="words"
+                    value={""}
+                  />
+                </View>
+              </View>
+              <View style={authStyles.halfInputWrapper}>
+                <Text style={authStyles.label}>Last name</Text>
+                <View style={[authStyles.inputContainer]}>
+                  <Ionicons
+                    name="person-outline"
+                    size={18}
+                    color="#888"
+                    style={authStyles.inputIcon}
+                  />
+                  <TextInput
+                    placeholder="Smith"
+                    placeholderTextColor="#999"
+                    style={authStyles.input}
+                    autoCapitalize="words"
+                    value={""}
+                  />
+                </View>
+              </View>
+            </View>
 
             <View style={authStyles.inputWrapper}>
               <Text style={authStyles.label}>Email</Text>
@@ -80,11 +119,33 @@ const LoginScreen = () => {
                   style={authStyles.inputIcon}
                 />
                 <TextInput
-                  placeholder="you@example.com"
+                  placeholder="j.smith@example.com"
                   placeholderTextColor="#999"
                   style={authStyles.input}
                   keyboardType="email-address"
                   autoCapitalize="none"
+                  value={""}
+                />
+              </View>
+            </View>
+
+            <View style={authStyles.inputWrapper}>
+              <Text style={authStyles.label}>
+                Phone number <Text style={{ color: "#999" }}>(optional)</Text>
+              </Text>
+              <View style={[authStyles.inputContainer]}>
+                <Ionicons
+                  name="call-outline"
+                  size={18}
+                  color="#888"
+                  style={authStyles.inputIcon}
+                />
+                <TextInput
+                  placeholder="0787735258"
+                  placeholderTextColor="#999"
+                  style={authStyles.input}
+                  keyboardType="phone-pad"
+                  maxLength={10}
                   value={""}
                 />
               </View>
@@ -100,9 +161,12 @@ const LoginScreen = () => {
                   style={authStyles.inputIcon}
                 />
                 <TextInput
-                  placeholder="Your password"
+                  placeholder="At least 8 characters"
                   placeholderTextColor="#999"
-                  style={[authStyles.input, authStyles.passwordInput]}
+                  style={[
+                    authStyles.input,
+                    authStyles.passwordInput,
+                  ]}
                   secureTextEntry={!showPassword}
                   value={""}
                 />
@@ -119,51 +183,29 @@ const LoginScreen = () => {
               </View>
             </View>
 
-            <View style={authStyles.forgotPasswordContainer}>
-              <TouchableOpacity
-                onPress={() => router.push("/screens/LoginScreen")}
-              >
-                <Text style={authStyles.forgotPasswordText}>
-                  Forgot password?
-                </Text>
-              </TouchableOpacity>
-            </View>
-
             <TouchableOpacity
               style={[authStyles.primaryButton]}
-              onPress={handleSignIn}
+              onPress={handleSignUp}
               disabled={false}
             >
               {false ? (
                 <ActivityIndicator color="#000000" />
               ) : (
-                <Text style={authStyles.primaryButtonText}>Sign In</Text>
+                <Text style={authStyles.primaryButtonText}>Sign Up</Text>
               )}
             </TouchableOpacity>
 
             <View style={authStyles.separator}>
               <View style={authStyles.separatorLine} />
-              <Text style={authStyles.separatorText}>or continue with</Text>
               <View style={authStyles.separatorLine} />
             </View>
 
-            <View style={authStyles.socialButtons}>
-              <TouchableOpacity style={authStyles.socialButton}>
-                <Ionicons name="logo-google" size={20} color="#DB4437" />
-                <Text style={authStyles.socialButtonText}>Google</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={authStyles.socialButton}>
-                <Ionicons name="logo-apple" size={20} color="#000000" />
-                <Text style={authStyles.socialButtonText}>Apple</Text>
-              </TouchableOpacity>
-            </View>
-
             <TouchableOpacity
-              onPress={() => router.push("/screens/RegisterScreen")}
+              onPress={() => router.push("/screens/(auth)/LoginScreen")}
             >
               <Text style={authStyles.footerText}>
-                Don&apos;t have an account?{" "}
-                <Text style={authStyles.footerLink}>Create account</Text>
+                Already have an account?{" "}
+                <Text style={authStyles.footerLink}>Sign In</Text>
               </Text>
             </TouchableOpacity>
           </Animated.View>
@@ -173,4 +215,4 @@ const LoginScreen = () => {
   );
 };
 
-export default LoginScreen;
+export default RegisterScreen;
