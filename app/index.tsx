@@ -1,40 +1,78 @@
+import useAuthAnimations from "@/app/hooks/useAuthAnimations";
+import { router } from "expo-router";
 import React from "react";
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  Animated,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const LandingScreen = () => {
+  const { logoFadeAnim, logoScaleAnim, formSlideAnim, formFadeAnim } =
+    useAuthAnimations();
+
   return (
-    <View style={styles.container}>
-      <View style={styles.imageContainer}>
-        <Image
-          source={require("../assets/images/icon.png")}
-          style={styles.image}
-          resizeMode="contain"
-        />
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        <Animated.View
+          style={[
+            styles.imageContainer,
+            {
+              opacity: logoFadeAnim,
+              transform: [{ scale: logoScaleAnim }],
+            },
+          ]}
+        >
+          <Image
+            source={require("../assets/images/icon.png")}
+            style={styles.image}
+            resizeMode="contain"
+          />
+        </Animated.View>
+
+        <Animated.View
+          style={[
+            styles.bottomCard,
+            {
+              opacity: formFadeAnim,
+              transform: [{ translateY: formSlideAnim }],
+            },
+          ]}
+        >
+          <Text style={styles.title}>Find your dream job</Text>
+
+          <Text style={styles.subtitle}>
+            Discover opportunities, connect with employers, and advance your
+            career—your journey starts here.
+          </Text>
+
+          <TouchableOpacity style={styles.primaryButton}>
+            <Text style={styles.primaryButtonText}>Get Started</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.secondaryButton}
+            onPress={() => router.push("/screens/LoginScreen")}
+          >
+            <Text style={styles.secondaryButtonText}>Login</Text>
+          </TouchableOpacity>
+        </Animated.View>
       </View>
-
-      <View style={styles.bottomCard}>
-        <Text style={styles.title}>Find your dream job</Text>
-
-        <Text style={styles.subtitle}>
-          Discover opportunities, connect with employers, and advance your
-          career—your journey starts here.
-        </Text>
-
-        <TouchableOpacity style={styles.primaryButton}>
-          <Text style={styles.primaryButtonText}>Get Started</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.secondaryButton}>
-          <Text style={styles.secondaryButtonText}>Login</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+    </SafeAreaView>
   );
 };
 
 export default LandingScreen;
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#f5f5f5",
+  },
   container: {
     flex: 1,
     backgroundColor: "#f5f5f5",
