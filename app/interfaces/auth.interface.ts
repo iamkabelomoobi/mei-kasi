@@ -1,10 +1,13 @@
-interface LoginResponse {
-  access_token: string;
-}
-
 interface LoginRequest {
   email: string;
   password: string;
 }
 
-export { LoginRequest, LoginResponse };
+interface RegisterRequest {
+  first_name: string;
+  last_name: string;
+  email: string;
+  password: string;
+}
+
+export { LoginRequest, RegisterRequest };

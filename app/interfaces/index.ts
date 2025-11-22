@@ -1,1 +1,1 @@
-export { LoginRequest, LoginResponse } from "./auth.interface";
+export { LoginRequest, RegisterRequest } from "./auth.interface";
