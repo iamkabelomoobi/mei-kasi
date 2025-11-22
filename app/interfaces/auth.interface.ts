@@ -10,4 +10,8 @@ interface RegisterRequest {
   password: string;
 }
 
-export { LoginRequest, RegisterRequest };
+interface ForgotPasswordRequest {
+  email: string;
+}
+
+export { LoginRequest, RegisterRequest, ForgotPasswordRequest };
