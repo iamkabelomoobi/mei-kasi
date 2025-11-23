@@ -23,36 +23,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 const ForgotPasswordScreen = () => {
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
 
   const { logoFadeAnim, logoScaleAnim, formSlideAnim, formFadeAnim } =
     useAuthAnimations();
 
-  const validateEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
   const handleSubmit = () => {
-    setError("");
-
-    if (!email.trim()) {
-      setError("Email is required");
-      return;
-    }
-
-    if (!validateEmail(email)) {
-      setError("Please enter a valid email");
-      return;
-    }
-
-    // TODO: implement forgot password logic
-    setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      // Navigate to success screen or show success message
-    }, 2000);
+    // TODO: Implement reset update password logic
   };
 
   return (
@@ -100,8 +76,8 @@ const ForgotPasswordScreen = () => {
           >
             <Text style={authStyles.title}>Reset your password</Text>
             <Text style={styles.helperText}>
-              No worries! Enter your email and we&apos;ll send you a code to reset
-              it.
+              No worries! Enter your email and we&apos;ll send you a code to
+              reset it.
             </Text>
 
             <View style={authStyles.inputWrapper}>
@@ -135,14 +111,11 @@ const ForgotPasswordScreen = () => {
             </View>
 
             <TouchableOpacity
-              style={[
-                authStyles.primaryButton,
-                isLoading && authStyles.buttonDisabled,
-              ]}
-              onPress={handleSubmit}
-              disabled={isLoading}
+              style={[authStyles.primaryButton]}
+              onPress={() => router.push("/screens/ResetPasswordScreen")}
+              disabled={false}
             >
-              {isLoading ? (
+              {false ? (
                 <ActivityIndicator color={colors.buttonText} />
               ) : (
                 <Text style={authStyles.primaryButtonText}>
