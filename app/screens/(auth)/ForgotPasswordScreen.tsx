@@ -112,7 +112,7 @@ const ForgotPasswordScreen = () => {
 
             <TouchableOpacity
               style={[authStyles.primaryButton]}
-              onPress={() => router.push("/screens/ResetPasswordScreen")}
+              onPress={() => router.push("/screens/OTPVerificationScreen")}
               disabled={false}
             >
               {false ? (
