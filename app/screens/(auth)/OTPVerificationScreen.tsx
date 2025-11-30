@@ -1,7 +1,9 @@
-import useAuthAnimations from "@/app/hooks/useAuthAnimations";
-import { colors } from "@/app/theme/colors";
 import { authStyles } from "@/app/theme";
+import { colors } from "@/app/theme/colors";
+import { useAuth } from "@/hooks/useAuth";
+import useAuthAnimations from "@/hooks/useAuthAnimations";
 import { Ionicons } from "@expo/vector-icons";
+import { useMutation } from "@tanstack/react-query";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -27,10 +29,18 @@ const OTPVerificationScreen = () => {
     : params.email;
   const email = emailParam ?? "";
 
+  const {
+    verifyOTP,
+    forgotPassword,
+    error: authError,
+    clearError,
+    isLoading: authLoading,
+  } = useAuth();
+
   const [code, setCode] = useState<string[]>(["", "", "", "", "", ""]);
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
-  const [error, setError] = useState("");
   const [timer, setTimer] = useState(60);
+  const [canResend, setCanResend] = useState(false);
 
   const inputRefs = useRef<(TextInput | null)[]>([]);
 
@@ -39,6 +49,7 @@ const OTPVerificationScreen = () => {
 
   useEffect(() => {
     if (timer === 0) {
+      setCanResend(true);
       return;
     }
     const interval = setInterval(
@@ -48,12 +59,69 @@ const OTPVerificationScreen = () => {
     return () => clearInterval(interval);
   }, [timer]);
 
+  const verifyOTPMutation = useMutation({
+    mutationFn: async (otp: string) => {
+      console.log("Mutation: Calling verifyOTP with:", { email, otp });
+      return await verifyOTP({ email, otp });
+    },
+    onSuccess: (result) => {
+      console.log("Mutation onSuccess: OTP verification result:", result);
+
+      // Only navigate if verification was successful AND we have a token
+      if (result.success && result.token) {
+        console.log(
+          "OTP verified successfully, navigating to reset password screen"
+        );
+        router.push({
+          pathname: "/screens/(auth)/ResetPasswordScreen",
+          params: {
+            email,
+            resetToken: result.token,
+          },
+        });
+      } else {
+        console.log("OTP verification failed, staying on OTP screen");
+        // Clear the code inputs so user can try again
+        setCode(["", "", "", "", "", ""]);
+        if (inputRefs.current[0]) {
+          inputRefs.current[0].focus();
+        }
+      }
+    },
+    onError: (error: any) => {
+      console.error("Mutation onError: Verify OTP mutation error:", error);
+      // Clear the code inputs so user can try again
+      setCode(["", "", "", "", "", ""]);
+      if (inputRefs.current[0]) {
+        inputRefs.current[0].focus();
+      }
+    },
+  });
+
+  const resendOTPMutation = useMutation({
+    mutationFn: async () => {
+      return await forgotPassword({ email });
+    },
+    onSuccess: (success) => {
+      if (success) {
+        setTimer(60);
+        setCanResend(false);
+        // Clear any previous errors
+        clearError();
+        console.log("OTP resent successfully");
+      }
+    },
+    onError: (error: any) => {
+      console.error("Resend OTP mutation error:", error);
+    },
+  });
+
   const handleCodeChange = (value: string, index: number) => {
     const sanitized = value.replace(/[^0-9]/g, "");
     const updated = [...code];
     updated[index] = sanitized;
     setCode(updated);
-    setError("");
+    clearError();
 
     if (sanitized && index < code.length - 1) {
       inputRefs.current[index + 1]?.focus();
@@ -68,6 +136,32 @@ const OTPVerificationScreen = () => {
       inputRefs.current[index - 1]?.focus();
     }
   };
+
+  const handleVerify = () => {
+    clearError();
+    const otp = code.join("");
+
+    if (otp.length !== 6) {
+      console.log("OTP incomplete, length:", otp.length);
+      return;
+    }
+
+    console.log("Verifying OTP:", otp);
+    verifyOTPMutation.mutate(otp);
+  };
+
+  const handleResend = () => {
+    if (!canResend || resendOTPMutation.isPending) {
+      return;
+    }
+    clearError();
+    // Clear the code inputs
+    setCode(["", "", "", "", "", ""]);
+    resendOTPMutation.mutate();
+  };
+
+  const isCodeComplete = code.every((digit) => digit !== "");
+  const isLoading = authLoading || verifyOTPMutation.isPending;
 
   return (
     <SafeAreaView style={authStyles.safeArea}>
@@ -128,7 +222,7 @@ const OTPVerificationScreen = () => {
                   style={[
                     styles.otpInput,
                     focusedIndex === index && styles.otpInputFocused,
-                    error && styles.otpInputError,
+                    authError && styles.otpInputError,
                   ]}
                   keyboardType="number-pad"
                   returnKeyType="done"
@@ -142,14 +236,21 @@ const OTPVerificationScreen = () => {
               ))}
             </View>
 
-            {error ? <Text style={authStyles.errorText}>{error}</Text> : null}
+            {authError && (
+              <View style={styles.errorContainer}>
+                <Text style={authStyles.errorText}>{authError.message}</Text>
+              </View>
+            )}
 
             <TouchableOpacity
-              style={[authStyles.primaryButton]}
-              onPress={() => router.push("/screens/ResetPasswordScreen")}
-              disabled={false}
+              style={[
+                authStyles.primaryButton,
+                (!isCodeComplete || isLoading) && { opacity: 0.6 },
+              ]}
+              onPress={handleVerify}
+              disabled={!isCodeComplete || isLoading}
             >
-              {false ? (
+              {isLoading ? (
                 <ActivityIndicator color={colors.buttonText} />
               ) : (
                 <Text style={authStyles.primaryButtonText}>
@@ -160,11 +261,20 @@ const OTPVerificationScreen = () => {
 
             <View style={styles.resendRow}>
               <Text style={styles.resendText}>Didn&apos;t receive it?</Text>
-              <TouchableOpacity disabled={false} onPress={() => {}}>
-                <Text style={[styles.resendButton]}>
-                  {false
+              <TouchableOpacity
+                disabled={!canResend || resendOTPMutation.isPending}
+                onPress={handleResend}
+              >
+                <Text
+                  style={[
+                    styles.resendButton,
+                    (!canResend || resendOTPMutation.isPending) &&
+                      styles.resendDisabled,
+                  ]}
+                >
+                  {resendOTPMutation.isPending
                     ? "Sending..."
-                    : false
+                    : !canResend
                     ? `Resend in ${timer}s`
                     : "Resend code"}
                 </Text>
@@ -216,6 +326,9 @@ const styles = StyleSheet.create({
   },
   otpInputError: {
     borderColor: colors.borderError,
+  },
+  errorContainer: {
+    marginBottom: 16,
   },
   resendRow: {
     flexDirection: "row",

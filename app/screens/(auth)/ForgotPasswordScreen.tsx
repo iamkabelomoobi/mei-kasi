@@ -1,9 +1,17 @@
-import useAuthAnimations from "@/app/hooks/useAuthAnimations";
-import { colors } from "@/app/theme/colors";
 import { authStyles } from "@/app/theme";
+import { colors } from "@/app/theme/colors";
+import { useAuth } from "@/hooks/useAuth";
+import useAuthAnimations from "@/hooks/useAuthAnimations";
+import {
+  ForgotPasswordFormData,
+  forgotPasswordSchema,
+} from "@/schemas/auth";
 import { Ionicons } from "@expo/vector-icons";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@tanstack/react-query";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React from "react";
+import { Controller, useForm } from "react-hook-form";
 import {
   ActivityIndicator,
   Animated,
@@ -21,15 +29,52 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const ForgotPasswordScreen = () => {
-  const [email, setEmail] = useState("");
-  const [error, setError] = useState("");
+  const {
+    forgotPassword,
+    error: authError,
+    clearError,
+    isLoading: authLoading,
+  } = useAuth();
 
   const { logoFadeAnim, logoScaleAnim, formSlideAnim, formFadeAnim } =
     useAuthAnimations();
 
-  const handleSubmit = () => {
-    // TODO: Implement reset update password logic
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+    getValues,
+  } = useForm<ForgotPasswordFormData>({
+    resolver: zodResolver(forgotPasswordSchema),
+    defaultValues: {
+      email: "",
+    },
+  });
+
+  const forgotPasswordMutation = useMutation({
+    mutationFn: async (data: ForgotPasswordFormData) => {
+      return await forgotPassword({ email: data.email });
+    },
+    onSuccess: (success) => {
+      if (success) {
+        // Navigate to OTP verification screen with email
+        router.push({
+          pathname: "/screens/OTPVerificationScreen",
+          params: { email: getValues("email") },
+        });
+      }
+    },
+    onError: (error: any) => {
+      console.error("Forgot password mutation error:", error);
+    },
+  });
+
+  const handleSubmitForm = (data: ForgotPasswordFormData) => {
+    clearError();
+    forgotPasswordMutation.mutate(data);
   };
+
+  const isLoading = authLoading || forgotPasswordMutation.isPending;
 
   return (
     <SafeAreaView style={authStyles.safeArea}>
@@ -82,40 +127,64 @@ const ForgotPasswordScreen = () => {
 
             <View style={authStyles.inputWrapper}>
               <Text style={authStyles.label}>Email address</Text>
-              <View
-                style={[
-                  authStyles.inputContainer,
-                  error && authStyles.inputError,
-                ]}
-              >
-                <Ionicons
-                  name="mail-outline"
-                  size={18}
-                  color={colors.textMuted}
-                  style={authStyles.inputIcon}
-                />
-                <TextInput
-                  placeholder="you@example.com"
-                  placeholderTextColor={colors.textPlaceholder}
-                  style={authStyles.input}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  value={email}
-                  onChangeText={(text) => {
-                    setEmail(text);
-                    if (error) setError("");
-                  }}
-                />
-              </View>
-              {error && <Text style={authStyles.errorText}>{error}</Text>}
+              <Controller
+                control={control}
+                name="email"
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <View
+                    style={[
+                      authStyles.inputContainer,
+                      errors.email && { borderColor: "#ff3b30" },
+                    ]}
+                  >
+                    <Ionicons
+                      name="mail-outline"
+                      size={18}
+                      color={colors.textMuted}
+                      style={authStyles.inputIcon}
+                    />
+                    <TextInput
+                      placeholder="you@example.com"
+                      placeholderTextColor={colors.textPlaceholder}
+                      style={authStyles.input}
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                      onBlur={onBlur}
+                      onChangeText={onChange}
+                      value={value}
+                    />
+                  </View>
+                )}
+              />
+              {errors.email && (
+                <Text style={authStyles.errorText}>{errors.email.message}</Text>
+              )}
             </View>
 
+            {/* API Error Display */}
+            {authError && (
+              <View
+                style={{
+                  backgroundColor: "#fff5f5",
+                  padding: 12,
+                  borderRadius: 8,
+                  marginBottom: 16,
+                  borderLeftWidth: 4,
+                  borderLeftColor: "#ff3b30",
+                }}
+              >
+                <Text style={{ color: "#ff3b30", fontSize: 14 }}>
+                  {authError.message}
+                </Text>
+              </View>
+            )}
+
             <TouchableOpacity
-              style={[authStyles.primaryButton]}
-              onPress={() => router.push("/screens/OTPVerificationScreen")}
-              disabled={false}
+              style={[authStyles.primaryButton, isLoading && { opacity: 0.6 }]}
+              onPress={handleSubmit(handleSubmitForm)}
+              disabled={isLoading}
             >
-              {false ? (
+              {isLoading ? (
                 <ActivityIndicator color={colors.buttonText} />
               ) : (
                 <Text style={authStyles.primaryButtonText}>
