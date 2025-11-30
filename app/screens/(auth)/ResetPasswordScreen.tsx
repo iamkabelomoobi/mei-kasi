@@ -1,11 +1,13 @@
-import useAuthAnimations from "@/app/hooks/useAuthAnimations";
-import { colors } from "@/app/theme/colors";
 import { authStyles } from "@/app/theme";
+import { colors } from "@/app/theme/colors";
+import { useAuth } from "@/hooks/useAuth";
+import useAuthAnimations from "@/hooks/useAuthAnimations";
 import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Animated,
   Image,
   KeyboardAvoidingView,
@@ -21,6 +23,17 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const ResetPasswordScreen = () => {
+  const params = useLocalSearchParams<{
+    resetToken?: string;
+    email?: string;
+  }>();
+
+  // Handle both array and string cases for route params
+  const resetTokenParam = Array.isArray(params.resetToken)
+    ? params.resetToken[0]
+    : params.resetToken;
+  const resetToken = resetTokenParam ?? "";
+
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -29,7 +42,8 @@ const ResetPasswordScreen = () => {
     password?: string;
     confirmPassword?: string;
   }>({});
-  const [isLoading, setIsLoading] = useState(false);
+
+  const { resetPassword, isLoading, error, clearError } = useAuth();
 
   const { logoFadeAnim, logoScaleAnim, formSlideAnim, formFadeAnim } =
     useAuthAnimations();
@@ -47,6 +61,11 @@ const ResetPasswordScreen = () => {
     // Clear error for the field being edited
     if (errors[field]) {
       setErrors({ ...errors, [field]: undefined });
+    }
+
+    // Clear auth error when user starts typing
+    if (error) {
+      clearError();
     }
   };
 
@@ -69,14 +88,39 @@ const ResetPasswordScreen = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleResetPassword = () => {
+  const handleResetPassword = async () => {
+    if (!resetToken) {
+      Alert.alert("Error", "Reset token is missing. Please try again.", [
+        {
+          text: "OK",
+          onPress: () => router.replace("/screens/(auth)/ForgotPasswordScreen"),
+        },
+      ]);
+      return;
+    }
+
     if (validateForm()) {
-      setIsLoading(true);
-      // TODO: implement reset password logic
-      setTimeout(() => {
-        setIsLoading(false);
-        router.replace("/screens/(auth)/LoginScreen");
-      }, 2000);
+      console.log("Resetting password with token:", resetToken);
+
+      const result = await resetPassword({
+        token: resetToken,
+        newPassword: password,
+        confirmPassword: confirmPassword,
+      });
+
+      if (result.success) {
+        Alert.alert(
+          "Success",
+          result.message ||
+            "Password has been reset successfully. Please log in with your new password.",
+          [
+            {
+              text: "OK",
+              onPress: () => router.replace("/screens/(auth)/LoginScreen"),
+            },
+          ]
+        );
+      }
     }
   };
 
@@ -128,6 +172,13 @@ const ResetPasswordScreen = () => {
               Choose a strong password you haven&apos;t used before.
             </Text>
 
+            {error && (
+              <View style={styles.errorContainer}>
+                <Ionicons name="alert-circle" size={20} color={colors.error} />
+                <Text style={authStyles.errorText}>{error.message}</Text>
+              </View>
+            )}
+
             <View style={authStyles.inputWrapper}>
               <Text style={authStyles.label}>New password</Text>
               <View
@@ -149,6 +200,8 @@ const ResetPasswordScreen = () => {
                   secureTextEntry={!showPassword}
                   value={password}
                   onChangeText={(text) => handleFieldChange("password", text)}
+                  autoCapitalize="none"
+                  autoCorrect={false}
                 />
                 <TouchableOpacity
                   onPress={() => setShowPassword(!showPassword)}
@@ -189,6 +242,8 @@ const ResetPasswordScreen = () => {
                   onChangeText={(text) =>
                     handleFieldChange("confirmPassword", text)
                   }
+                  autoCapitalize="none"
+                  autoCorrect={false}
                 />
                 <TouchableOpacity
                   onPress={() => setShowConfirmPassword(!showConfirmPassword)}
@@ -246,6 +301,15 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 24,
     lineHeight: 20,
+  },
+  errorContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    backgroundColor: colors.errorBackground || "#FEE2E2",
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
   },
   backLink: {
     flexDirection: "row",

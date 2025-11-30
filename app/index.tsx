@@ -1,4 +1,4 @@
-import useAuthAnimations from "@/app/hooks/useAuthAnimations";
+import useAuthAnimations from "@/hooks/useAuthAnimations";
 import { router } from "expo-router";
 import React from "react";
 import {
@@ -50,13 +50,16 @@ const LandingScreen = () => {
             career—your journey starts here.
           </Text>
 
-          <TouchableOpacity style={styles.primaryButton}>
+          <TouchableOpacity
+            style={styles.primaryButton}
+            onPress={() => router.push("/screens/(auth)/RegisterScreen")}
+          >
             <Text style={styles.primaryButtonText}>Get Started</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.secondaryButton}
-            onPress={() => router.push("/screens/LoginScreen")}
+            onPress={() => router.push("/screens/(auth)/LoginScreen")}
           >
             <Text style={styles.secondaryButtonText}>Login</Text>
           </TouchableOpacity>
