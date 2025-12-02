@@ -62,12 +62,12 @@ const RegisterScreen = () => {
       };
       return await register(registerData);
     },
-    onSuccess: (success) => {
+    onSuccess: (success, variables) => {
       if (success) {
         reset();
-        router.push({
-          pathname: "/screens/(auth)/LoginScreen",
-          params: { message: "Registration successful! Please login." },
+        router.replace({
+          pathname: "/screens/(auth)/OTPVerificationScreen",
+          params: { email: variables.email, type: "verify" },
         });
       }
     },

@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import useAuthAnimations from "@/hooks/useAuthAnimations";
 import { Ionicons } from "@expo/vector-icons";
 import { useMutation } from "@tanstack/react-query";
-import { router, useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -21,21 +21,20 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useAuthContext } from "../../../contexts/AuthContext"; // already imported
 
-const OTPVerificationScreen = () => {
-  const params = useLocalSearchParams<{ email?: string }>();
-  const emailParam = Array.isArray(params.email)
-    ? params.email[0]
-    : params.email;
-  const email = emailParam ?? "";
-
+const OtpVerificationScreen = () => {
+  const router = useRouter();
+  const { email, type } = useLocalSearchParams<{ email: string; type?: string }>();
   const {
+    verifyAccount,
     verifyOTP,
     forgotPassword,
     error: authError,
     clearError,
     isLoading: authLoading,
   } = useAuth();
+  const { checkAuth } = useAuthContext();
 
   const [code, setCode] = useState<string[]>(["", "", "", "", "", ""]);
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
@@ -59,19 +58,19 @@ const OTPVerificationScreen = () => {
     return () => clearInterval(interval);
   }, [timer]);
 
-  const verifyOTPMutation = useMutation({
+  const verifyMutation = useMutation({
     mutationFn: async (otp: string) => {
-      console.log("Mutation: Calling verifyOTP with:", { email, otp });
-      return await verifyOTP({ email, otp });
+      if (type === "verify") {
+        return await verifyAccount(email, otp);
+      } else {
+        return await verifyOTP({ email, otp });
+      }
     },
-    onSuccess: (result) => {
-      console.log("Mutation onSuccess: OTP verification result:", result);
-
-      // Only navigate if verification was successful AND we have a token
-      if (result.success && result.token) {
-        console.log(
-          "OTP verified successfully, navigating to reset password screen"
-        );
+    onSuccess: async (result) => {
+      if (type === "verify" && result.success) {
+        await checkAuth();
+        router.replace("/screens/(profile)/OnboardingScreen");
+      } else if (type === "reset" && result.success) {
         router.push({
           pathname: "/screens/(auth)/ResetPasswordScreen",
           params: {
@@ -80,17 +79,13 @@ const OTPVerificationScreen = () => {
           },
         });
       } else {
-        console.log("OTP verification failed, staying on OTP screen");
-        // Clear the code inputs so user can try again
         setCode(["", "", "", "", "", ""]);
         if (inputRefs.current[0]) {
           inputRefs.current[0].focus();
         }
       }
     },
-    onError: (error: any) => {
-      console.error("Mutation onError: Verify OTP mutation error:", error);
-      // Clear the code inputs so user can try again
+    onError: () => {
       setCode(["", "", "", "", "", ""]);
       if (inputRefs.current[0]) {
         inputRefs.current[0].focus();
@@ -106,14 +101,10 @@ const OTPVerificationScreen = () => {
       if (success) {
         setTimer(60);
         setCanResend(false);
-        // Clear any previous errors
         clearError();
-        console.log("OTP resent successfully");
       }
     },
-    onError: (error: any) => {
-      console.error("Resend OTP mutation error:", error);
-    },
+    onError: () => {},
   });
 
   const handleCodeChange = (value: string, index: number) => {
@@ -138,16 +129,7 @@ const OTPVerificationScreen = () => {
   };
 
   const handleVerify = () => {
-    clearError();
-    const otp = code.join("");
-
-    if (otp.length !== 6) {
-      console.log("OTP incomplete, length:", otp.length);
-      return;
-    }
-
-    console.log("Verifying OTP:", otp);
-    verifyOTPMutation.mutate(otp);
+    verifyMutation.mutate(code.join(""));
   };
 
   const handleResend = () => {
@@ -155,13 +137,12 @@ const OTPVerificationScreen = () => {
       return;
     }
     clearError();
-    // Clear the code inputs
     setCode(["", "", "", "", "", ""]);
     resendOTPMutation.mutate();
   };
 
   const isCodeComplete = code.every((digit) => digit !== "");
-  const isLoading = authLoading || verifyOTPMutation.isPending;
+  const isLoading = authLoading || verifyMutation.isPending;
 
   return (
     <SafeAreaView style={authStyles.safeArea}>
@@ -363,4 +344,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default OTPVerificationScreen;
+export default OtpVerificationScreen;

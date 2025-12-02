@@ -233,4 +233,16 @@ export const authService = {
       ] = `Bearer ${accessToken}`;
     }
   },
+
+  verifyAccount: async (email: string, otp: string): Promise<any> => {
+    try {
+      const response = await apiClient.post("/auth/verify-account", {
+        email,
+        otp,
+      });
+      return response.data;
+    } catch (error: any) {
+      throw error;
+    }
+  },
 };

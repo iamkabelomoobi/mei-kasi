@@ -243,6 +243,38 @@ export const useAuth = () => {
     setError(null);
   };
 
+  const verifyAccount = async (
+    email: string,
+    otp: string
+  ): Promise<{ success: boolean; message?: string }> => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await authService.verifyAccount(email, otp);
+
+      if (response.status === "success" && response.statusCode === 200) {
+        return { success: true, message: response.data?.message };
+      }
+
+      setError({
+        message: response.data?.message || "Failed to verify account",
+      });
+      return { success: false, message: response.data?.message };
+    } catch (err: any) {
+      const errorMessage =
+        err.response?.data?.error?.message ||
+        err.response?.data?.message ||
+        err.message ||
+        "Failed to verify account";
+
+      setError({ message: errorMessage });
+      return { success: false, message: errorMessage };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return {
     isLoading,
     isAuthenticated,
@@ -252,6 +284,7 @@ export const useAuth = () => {
     login,
     forgotPassword,
     verifyOTP,
+    verifyAccount,
     resetPassword,
     logout,
     refreshToken,
