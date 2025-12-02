@@ -9,7 +9,7 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 2,
-      staleTime: 5 * 60 * 1000, // 5 minutes
+      staleTime: 5 * 60 * 1000,
     },
     mutations: {
       retry: 1,
@@ -21,7 +21,7 @@ const RootLayoutNav = () => {
   const pathname = usePathname();
   const segments = useSegments();
   const router = useRouter();
-  const { isAuthenticated, isLoading } = useAuthContext();
+  const { isAuthenticated, isLoading} = useAuthContext();
 
   const authRoutes = [
     "/screens/(auth)/LoginScreen",
@@ -49,7 +49,7 @@ const RootLayoutNav = () => {
     if (isAuthenticated && (inAuthGroup || isOnLandingPage)) {
       router.replace("/screens/(home)/HomeScreen");
     } else if (!isAuthenticated && !inAuthGroup && !isOnLandingPage) {
-      router.replace("/");
+      router.replace("/screens/(home)/HomeScreen");
     }
   }, [isAuthenticated, segments, isLoading, router, pathname]);
 

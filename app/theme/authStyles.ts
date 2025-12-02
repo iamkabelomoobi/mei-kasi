@@ -12,7 +12,7 @@ export const authStyles = StyleSheet.create({
     backgroundColor: colors.background,
     paddingHorizontal: 20,
     justifyContent: "center",
-    paddingBottom: 30,
+    paddingBottom: 20,
   },
 
   imageContainer: {

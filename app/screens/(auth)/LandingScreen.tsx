@@ -28,7 +28,7 @@ const LandingScreen = () => {
           ]}
         >
           <Image
-            source={require("../assets/images/icon.png")}
+            source={require("../../../assets/images/icon.png")}
             style={styles.image}
             resizeMode="contain"
           />
