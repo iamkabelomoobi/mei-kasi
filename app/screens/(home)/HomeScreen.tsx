@@ -23,9 +23,6 @@ const recentFilters = [
   "Product Manager",
 ];
 
-/**
- * Home screen component displaying job listings and top companies
- */
 const HomeScreen = () => {
   const router = useRouter();
   const [activeFilter, setActiveFilter] = useState<string>("All");
@@ -65,13 +62,9 @@ const HomeScreen = () => {
     return Array.from(map.values()).slice(0, 10);
   }, []);
 
-  /**
-   * Handles navigation to job detail screen
-   * @param {any} job - Job object containing job details
-   */
   const handleJobPress = (job: any) => {
     router.push({
-      pathname: "/screens/(job)/JobDetailScreen",
+      pathname: "/screens/(jobs)/JobDetailScreen",
       params: {
         company: job.company,
         title: job.title,
@@ -107,14 +100,14 @@ const HomeScreen = () => {
         contentContainerStyle={{ paddingBottom: 90 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* HEADER  */}
         <HeaderCard />
 
-        {/* SUGGESTED JOBS */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Suggested Jobs</Text>
-            <TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => router.replace("/screens/(jobs)/JobsScreen")}
+            >
               <Text style={styles.seeAllText}>See all</Text>
             </TouchableOpacity>
           </View>
@@ -130,16 +123,16 @@ const HomeScreen = () => {
           </ScrollView>
         </View>
 
-        {/* RECENT JOBS */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Recent Jobs</Text>
-            <TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => router.replace("/screens/(jobs)/JobsScreen")}
+            >
               <Text style={styles.seeAllText}>See all</Text>
             </TouchableOpacity>
           </View>
 
-          {/* Filter chips */}
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -169,7 +162,6 @@ const HomeScreen = () => {
             })}
           </ScrollView>
 
-          {/* Recent job list */}
           <View style={styles.recentJobsList}>
             {filteredRecentJobs.map((job) => (
               <JobList key={job.id} job={job} onPress={handleJobPress} />
@@ -177,7 +169,6 @@ const HomeScreen = () => {
           </View>
         </View>
 
-        {/* TOP COMPANIES */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Top Companies</Text>

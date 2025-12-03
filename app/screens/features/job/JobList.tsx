@@ -16,10 +16,7 @@ interface JobListProps {
   onPress: (job: Job) => void;
 }
 
-/**
- * JobList component for displaying individual job items
- * Shows job title, company, location, and salary
- */
+
 const JobList: React.FC<JobListProps> = ({ job, onPress }) => {
   return (
     <TouchableOpacity
@@ -31,14 +28,20 @@ const JobList: React.FC<JobListProps> = ({ job, onPress }) => {
         <View style={styles.smallLogoWrapper}>
           <Image source={job.logo} style={styles.smallCompanyLogo} />
         </View>
-        <View>
-          <Text style={styles.recentJobTitle}>{job.title}</Text>
-          <Text style={styles.recentJobCompany}>
-            {job.company} • {job.location}
+        <View style={styles.jobDetails}>
+          <Text style={styles.recentJobTitle} numberOfLines={1}>{job.title}</Text>
+          <Text style={styles.recentJobCompany} numberOfLines={1}>
+            {job.company}
+          </Text>
+          <Text style={styles.recentJobLocation} numberOfLines={1}>
+            {job.location}
           </Text>
         </View>
       </View>
-      <Text style={styles.recentJobSalary}>{job.salary}</Text>
+      <View style={styles.rightSection}>
+        <Text style={styles.recentJobSalary}>{job.salary}</Text>
+        <Text style={styles.salaryPeriod}>per month</Text>
+      </View>
     </TouchableOpacity>
   );
 };
@@ -49,8 +52,8 @@ const styles = StyleSheet.create({
   recentJobItem: {
     marginTop: 14,
     marginHorizontal: 20,
-    paddingVertical: 12,
-    paddingHorizontal: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 16,
     borderRadius: 16,
     backgroundColor: colors.white,
     borderWidth: 1,
@@ -58,46 +61,59 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    shadowColor: colors.shadow,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
   },
   recentJobLeft: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
+    flex: 1,
+    marginRight: 12,
   },
   smallLogoWrapper: {
-    width: 40,
-    height: 40,
-    borderRadius: 10,
-    backgroundColor: colors.white,
+    width: 56,
+    height: 56,
+    borderRadius: 12,
+    backgroundColor: colors.backgroundLight,
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.borderLight,
     overflow: "hidden",
+    marginRight: 12,
   },
   smallCompanyLogo: {
-    width: "85%",
-    height: "85%",
+    width: "70%",
+    height: "70%",
     resizeMode: "contain",
   },
+  jobDetails: {
+    flex: 1,
+  },
   recentJobTitle: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: "600",
     color: colors.text,
+    marginBottom: 4,
   },
   recentJobCompany: {
+    fontSize: 14,
+    color: colors.textLight,
+    marginBottom: 4,
+  },
+  recentJobLocation: {
     fontSize: 12,
-    color: "#9A9A9A",
-    marginTop: 2,
+    color: colors.textMuted,
+  },
+  rightSection: {
+    alignItems: "flex-end",
   },
   recentJobSalary: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: colors.primary,
+    fontSize: 16,
+    fontWeight: "700",
+    color: colors.text,
+    marginBottom: 2,
+  },
+  salaryPeriod: {
+    fontSize: 11,
+    color: colors.textMuted,
   },
 });

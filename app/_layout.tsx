@@ -46,10 +46,12 @@ const RootLayoutNav = () => {
     const inAuthGroup = segments[0] === "screens" && segments[1] === "(auth)";
     const isOnLandingPage = pathname === "/";
 
-    if (isAuthenticated && (inAuthGroup || isOnLandingPage)) {
-      router.replace("/screens/(home)/HomeScreen");
+    if (isAuthenticated) {
+      if (inAuthGroup || isOnLandingPage) {
+        router.replace("/screens/(home)/HomeScreen");
+      }
     } else if (!isAuthenticated && !inAuthGroup && !isOnLandingPage) {
-      router.replace("/screens/(home)/HomeScreen");
+      router.replace("/screens/(auth)/LoginScreen");
     }
   }, [isAuthenticated, segments, isLoading, router, pathname]);
 
