@@ -1,14 +1,8 @@
 export {
-  RegisterRequest,
-  AuthResponse,
-  LoginRequest,
-  ForgotPasswordRequest,
-  VerifyOTPRequest,
-  ResetPasswordRequest,
-  ForgotPasswordResponse,
-  VerifyOTPResponse,
-  RegisterResponse,
-  LoginResponse,
-  ResetPasswordResponse,
-  MessageResponse,
+  AuthResponse, ForgotPasswordRequest, ForgotPasswordResponse, LoginRequest, LoginResponse, MessageResponse, RegisterRequest, RegisterResponse, ResetPasswordRequest, ResetPasswordResponse, VerifyOTPRequest, VerifyOTPResponse
 } from "./auth.interface";
+
+export {
+  Job, JobsQueryParams, JobsResponse
+} from "./job.interface";
+
